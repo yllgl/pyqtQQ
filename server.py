@@ -357,11 +357,11 @@ def accept_group_request(data):
                     if db.insert(GroupMembers,user_id=user_id,group_id=group_id):
                         socketio.emit(ClientEvent.accept_group_request_success.name, {"message":"Group request accepted!","status":Status.SUCCESS.value,"group_id":group_id,"username":username},to=request.sid)
                         db.update(Operation,dict(author_id=user_id,type=OperationType.JOIN_GROUP,group_id=group_id),isProcess=True)
+                        socketio.emit(ClientEvent.new_user_join_group.name,{"message":"New user joined the group!","status":Status.SUCCESS.value,"group_id":group_id,"username":username,"nickname":db.query(User,id=user_id)[0].nickname},to=int(group_id))
                         if user_id in logged_in_users_session_id:
                             members = [db.query(User, id=member.user_id)[0] for member in db.query(GroupMembers, group_id=group.id)]
                             join_room(int(group.id),logged_in_users_session_id[user_id])
                             socketio.emit(ClientEvent.get_group_request_accepted.name, {"message":"Group request accepted!","status":Status.SUCCESS.value, "group_id": group_id,"group_name":group.name,"timestamp":int(time.time()),"manager_username":db.query(User,id=group.manager_id)[0].username,"members":[{"username":member.username,"nickname":member.nickname} for member in members]}, to=logged_in_users_session_id[user_id])
-                        socketio.emit(ClientEvent.new_user_join_group.name,{"message":"New user joined the group!","status":Status.SUCCESS.value,"group_id":group_id,"username":username,"nickname":db.query(User,id=user_id)[0].nickname},to=int(group_id))
                     else:
                         socketio.emit(ClientEvent.accept_group_request_error.name, {"message":"insert groupMember database error!","status":Status.ERROR.value,"group_id":group_id,"username":username},to=request.sid)
                 else:
