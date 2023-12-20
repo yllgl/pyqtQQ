@@ -360,7 +360,7 @@ class GroupChatWindow(Ui_GroupChatWindow,QWidget):
     def event(self, event: QtCore.QEvent):
         if event.type() == ReceiveMessageEvent.EventType:
             data  = event.data
-            if event.fromGroup and data["group_id"]==self.groupID and data["username"]!=DataManager.dataManager.username:
+            if event.fromGroup and int(data["group_id"])==int(self.groupID) and data["username"]!=DataManager.dataManager.username:
                 self.addMessage(data['username'],data["content"],data["nickname"],data["timestamp"],data["username"]==DataManager.dataManager.username,isReverseInsert=False,isReceive=True)
             event.accept()  # 阻止事件进一步传播
             return True
