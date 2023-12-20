@@ -359,6 +359,7 @@ def accept_group_request(data):
                         db.update(Operation,dict(author_id=user_id,type=OperationType.JOIN_GROUP,group_id=group_id),isProcess=True)
                         if user_id in logged_in_users_session_id:
                             members = [db.query(User, id=member.user_id)[0] for member in db.query(GroupMembers, group_id=group.id)]
+                            join_room(int(group.id),logged_in_users_session_id[user_id])
                             socketio.emit(ClientEvent.get_group_request_accepted.name, {"message":"Group request accepted!","status":Status.SUCCESS.value, "group_id": group_id,"group_name":group.name,"timestamp":int(time.time()),"manager_username":db.query(User,id=group.manager_id)[0].username,"members":[{"username":member.username,"nickname":member.nickname} for member in members]}, to=logged_in_users_session_id[user_id])
                         socketio.emit(ClientEvent.new_user_join_group.name,{"message":"New user joined the group!","status":Status.SUCCESS.value,"group_id":group_id,"username":username,"nickname":db.query(User,id=user_id)[0].nickname},to=int(group_id))
                     else:
@@ -434,7 +435,7 @@ def delete_group(data):
     if group:
         if group.manager_id == user_id:
             if db.delete(ChatGroup,id=group.id):
-                close_room(group.id)
+                close_room(int(group.id))
                 socketio.emit(ClientEvent.send_message_success.name, {"message":"Delete group successfully!","status":Status.SUCCESS.value},to=request.sid)
             else:
                 socketio.emit(ClientEvent.send_message_error.name, {"message":"Delete group failed!","status":Status.ERROR.value},to=request.sid)
